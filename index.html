@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kush Rathod's Mortgage Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(to bottom, #e8f2ff 0%, #f5f8fc 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #1e4d9b;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .results-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #1e4d9b;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        /* Ensure number input spinners are visible */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+            height: 40px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #1e4d9b;
+        }
+
+        .helper-text {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .date-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-calculate {
+            background: #1e4d9b;
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            background: #163a75;
+        }
+
+        .btn-save {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+        }
+
+        .payment-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .payment-card {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .card-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            color: #1e4d9b;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .total-payment {
+            background: #e6f2ff;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .total-label {
+            color: #333;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .total-value {
+            color: #1e4d9b;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .loan-amount {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .chart-container {
+            margin-bottom: 30px;
+            position: relative;
+            height: 300px;
+        }
+
+        .amortization-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            padding: 8px 20px;
+            border: 1px solid #1e4d9b;
+            background: white;
+            color: #1e4d9b;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .toggle-btn.active {
+            background: #1e4d9b;
+            color: white;
+        }
+
+        .chart-section {
+            margin-bottom: 30px;
+        }
+
+        .bar-chart-container {
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: #f5f5f5;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .saved-scenarios {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-top: 30px;
+        }
+
+        .no-scenarios {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .payment-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kush Rathod's Mortgage Calculator</h1>
+            <p class="subtitle">Plan your mortgage with confidence and precision!</p>
+        </header>
+
+        <div class="calculator-grid">
+            <!-- Left Column: Inputs -->
+            <div class="input-section">
+                <h2>Mortgage Details</h2>
+
+                <div class="form-group">
+                    <label for="loanType">Loan Type</label>
+                    <select id="loanType">
+                        <option value="conventional">Conventional</option>
+                        <option value="jumbo">Jumbo</option>
+                        <option value="fha">FHA</option>
+                        <option value="va">VA</option>
+                        <option value="usda">USDA</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="salePrice">Sale Price ($)</label>
+                    <input type="number" id="salePrice" value="300000" min="0" step="1000">
+                </div>
+
+                <div class="form-group">
+                    <label for="downPayment">Down Payment ($)</label>
+                    <input type="number" id="downPayment" value="60000" min="0" step="1000">
+                    <div class="helper-text" id="downPaymentPercent">20% of sale price</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="loanTerm">Loan Term</label>
+                    <select id="loanTerm">
+                        <option value="15">15 years (180 months)</option>
+                        <option value="20">20 years (240 months)</option>
+                        <option value="30" selected>30 years (360 months)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="interestRate">Interest Rate (%)</label>
+                    <input type="number" id="interestRate" value="4.5" min="0" max="20" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="propertyTaxType">Property Tax</label>
+                    <select id="propertyTaxType">
+                        <option value="percent">% of Sale Price</option>
+                        <option value="dollar">$ per year</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input type="number" id="propertyTaxValue" value="1.2" min="0" step="0.01">
+                    <div class="helper-text" id="propertyTaxHelper">$3600 per year</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="insuranceType">Homeowners Insurance</label>
+                    <select id="insuranceType">
+                        <option value="percent">% of Sale Price</option>
+                        <option value="dollar">$ per year</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input type="number" id="insuranceValue" value="0.6" min="0" step="0.01">
+                    <div class="helper-text" id="insuranceHelper">$1800 per year</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pmi">Private Mortgage Insurance (PMI) ($ per month) <span style="color: #999;">(optional)</span></label>
+                    <input type="number" id="pmi" value="0" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="hoa">HOA Fees ($ per month) <span style="color: #999;">(optional)</span></label>
+                    <input type="number" id="hoa" value="0" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="condoFees">Condo Fees ($ per month) <span style="color: #999;">(optional)</span></label>
+                    <input type="number" id="condoFees" value="0" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Start Date</label>
+                    <div class="date-group">
+                        <select id="startMonth">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                        <input type="number" id="startYear" value="2025" min="2020" max="2100">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-calculate" onclick="calculate()">Calculate</button>
+                    <button class="btn-save" onclick="saveScenario()">Save Scenario</button>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="results-section">
+                <h2>Monthly Payment Breakdown</h2>
+                
+                <div class="payment-cards">
+                    <div class="payment-card">
+                        <div class="card-label">Principal & Interest</div>
+                        <div class="card-value" id="principalInterest">$1216.04</div>
+                    </div>
+                    <div class="payment-card">
+                        <div class="card-label">Property Tax</div>
+                        <div class="card-value" id="propertyTaxDisplay">$300.00</div>
+                    </div>
+                    <div class="payment-card">
+                        <div class="card-label">Insurance</div>
+                        <div class="card-value" id="insuranceDisplay">$150.00</div>
+                    </div>
+                    <div class="payment-card">
+                        <div class="card-label">Other Fees</div>
+                        <div class="card-value" id="otherFees">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="total-payment">
+                    <div>
+                        <div class="total-label">Total Monthly Payment</div>
+                        <div class="loan-amount">Loan Amount: <span id="loanAmountDisplay">$240,000</span></div>
+                    </div>
+                    <div class="total-value" id="totalPayment">$1666.04</div>
+                </div>
+
+                <h2>Payment Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+
+                <div class="amortization-header">
+                    <h2>Amortization Schedule</h2>
+                    <div class="toggle-buttons">
+                        <button class="toggle-btn active" onclick="toggleView('yearly')">Yearly</button>
+                        <button class="toggle-btn" onclick="toggleView('monthly')">Monthly</button>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="bar-chart-container">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-container" id="amortizationTable">
+                    <!-- Table will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div class="saved-scenarios">
+            <h2>Saved Scenarios</h2>
+            <div class="no-scenarios">No saved scenarios yet. Calculate and save to see them here.</div>
+        </div>
+    </div>
+
+    <script>
+        let pieChart = null;
+        let barChart = null;
+        let currentView = 'yearly';
+        let amortizationData = [];
+
+        // Initialize with default calculation
+        window.onload = function() {
+            calculate();
+        };
+
+        // Update helpers when values change
+        document.getElementById('salePrice').addEventListener('input', updateHelpers);
+        document.getElementById('downPayment').addEventListener('input', updateHelpers);
+        document.getElementById('propertyTaxType').addEventListener('change', updateHelpers);
+        document.getElementById('propertyTaxValue').addEventListener('input', updateHelpers);
+        document.getElementById('insuranceType').addEventListener('change', updateHelpers);
+        document.getElementById('insuranceValue').addEventListener('input', updateHelpers);
+
+        function updateHelpers() {
+            const salePrice = parseFloat(document.getElementById('salePrice').value) || 0;
+            const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+            
+            // Down payment percentage
+            const downPaymentPercent = salePrice > 0 ? ((downPayment / salePrice) * 100).toFixed(0) : 0;
+            document.getElementById('downPaymentPercent').textContent = `${downPaymentPercent}% of sale price`;
+
+            // Property tax helper
+            const propertyTaxType = document.getElementById('propertyTaxType').value;
+            const propertyTaxValue = parseFloat(document.getElementById('propertyTaxValue').value) || 0;
+            
+            if (propertyTaxType === 'percent') {
+                const yearlyTax = (salePrice * propertyTaxValue / 100);
+                document.getElementById('propertyTaxHelper').textContent = `$${yearlyTax.toFixed(0)} per year`;
+            } else {
+                document.getElementById('propertyTaxHelper').textContent = `$${propertyTaxValue.toFixed(0)} per year`;
+            }
+
+            // Insurance helper
+            const insuranceType = document.getElementById('insuranceType').value;
+            const insuranceValue = parseFloat(document.getElementById('insuranceValue').value) || 0;
+            
+            if (insuranceType === 'percent') {
+                const yearlyInsurance = (salePrice * insuranceValue / 100);
+                document.getElementById('insuranceHelper').textContent = `$${yearlyInsurance.toFixed(0)} per year`;
+            } else {
+                document.getElementById('insuranceHelper').textContent = `$${insuranceValue.toFixed(0)} per year`;
+            }
+        }
+
+        function calculate() {
+            // Get input values
+            const salePrice = parseFloat(document.getElementById('salePrice').value) || 0;
+            const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+            const loanAmount = salePrice - downPayment;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const loanTerm = parseInt(document.getElementById('loanTerm').value) || 30;
+            const months = loanTerm * 12;
+
+            // Property Tax
+            const propertyTaxType = document.getElementById('propertyTaxType').value;
+            const propertyTaxValue = parseFloat(document.getElementById('propertyTaxValue').value) || 0;
+            let monthlyPropertyTax = 0;
+            if (propertyTaxType === 'percent') {
+                monthlyPropertyTax = (salePrice * propertyTaxValue / 100) / 12;
+            } else {
+                monthlyPropertyTax = propertyTaxValue / 12;
+            }
+
+            // Insurance
+            const insuranceType = document.getElementById('insuranceType').value;
+            const insuranceValue = parseFloat(document.getElementById('insuranceValue').value) || 0;
+            let monthlyInsurance = 0;
+            if (insuranceType === 'percent') {
+                monthlyInsurance = (salePrice * insuranceValue / 100) / 12;
+            } else {
+                monthlyInsurance = insuranceValue / 12;
+            }
+
+            // Other fees
+            const pmi = parseFloat(document.getElementById('pmi').value) || 0;
+            const hoa = parseFloat(document.getElementById('hoa').value) || 0;
+            const condoFees = parseFloat(document.getElementById('condoFees').value) || 0;
+            const otherFeesTotal = pmi + hoa + condoFees;
+
+            // Calculate monthly principal & interest
+            const monthlyRate = interestRate / 100 / 12;
+            let monthlyPI = 0;
+            if (monthlyRate > 0) {
+                monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+            } else {
+                monthlyPI = loanAmount / months;
+            }
+
+            const totalMonthly = monthlyPI + monthlyPropertyTax + monthlyInsurance + otherFeesTotal;
+
+            // Update display
+            document.getElementById('principalInterest').textContent = `$${monthlyPI.toFixed(2)}`;
+            document.getElementById('propertyTaxDisplay').textContent = `$${monthlyPropertyTax.toFixed(2)}`;
+            document.getElementById('insuranceDisplay').textContent = `$${monthlyInsurance.toFixed(2)}`;
+            document.getElementById('otherFees').textContent = `$${otherFeesTotal.toFixed(2)}`;
+            document.getElementById('totalPayment').textContent = `$${totalMonthly.toFixed(2)}`;
+            document.getElementById('loanAmountDisplay').textContent = `$${loanAmount.toLocaleString()}`;
+
+            // Generate amortization schedule
+            generateAmortizationSchedule(loanAmount, monthlyRate, monthlyPI, months);
+
+            // Update charts
+            updatePieChart(monthlyPI, monthlyPropertyTax, monthlyInsurance, otherFeesTotal);
+            updateBarChart();
+            updateTable();
+        }
+
+        function generateAmortizationSchedule(principal, monthlyRate, payment, totalMonths) {
+            amortizationData = [];
+            let balance = principal;
+            const startMonth = parseInt(document.getElementById('startMonth').value);
+            const startYear = parseInt(document.getElementById('startYear').value);
+
+            for (let i = 1; i <= totalMonths; i++) {
+                const interestPayment = balance * monthlyRate;
+                const principalPayment = payment - interestPayment;
+                balance = Math.max(0, balance - principalPayment);
+
+                const currentDate = new Date(startYear, startMonth + i - 1);
+                
+                amortizationData.push({
+                    month: i,
+                    year: currentDate.getFullYear(),
+                    monthName: currentDate.toLocaleString('default', { month: 'long' }),
+                    principal: principalPayment,
+                    interest: interestPayment,
+                    totalPayment: payment,
+                    balance: balance
+                });
+            }
+        }
+
+        function updatePieChart(principal, propertyTax, insurance, otherFees) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            if (pieChart) {
+                pieChart.destroy();
+            }
+
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Principal & Interest', 'Property Tax', 'Insurance', 'Other Fees'],
+                    datasets: [{
+                        data: [principal, propertyTax, insurance, otherFees],
+                        backgroundColor: [
+                            '#5b9bd5',
+                            '#f4a460',
+                            '#9966ff',
+                            '#ff6b6b'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateBarChart() {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            
+            if (barChart) {
+                barChart.destroy();
+            }
+
+            let chartData;
+            if (currentView === 'yearly') {
+                chartData = getYearlyData();
+            } else {
+                chartData = getMonthlyData();
+            }
+
+            barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Principal',
+                            data: chartData.principal,
+                            backgroundColor: '#5b9bd5',
+                            stack: 'Stack 0'
+                        },
+                        {
+                            label: 'Interest',
+                            data: chartData.interest,
+                            backgroundColor: '#ed5454',
+                            stack: 'Stack 0'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: currentView === 'yearly' ? 'Year' : 'Month'
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Amount ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        function getYearlyData() {
+            const yearlyData = {};
+            
+            amortizationData.forEach(row => {
+                if (!yearlyData[row.year]) {
+                    yearlyData[row.year] = { principal: 0, interest: 0 };
+                }
+                yearlyData[row.year].principal += row.principal;
+                yearlyData[row.year].interest += row.interest;
+            });
+
+            const labels = Object.keys(yearlyData);
+            const principal = labels.map(year => yearlyData[year].principal);
+            const interest = labels.map(year => yearlyData[year].interest);
+
+            return { labels, principal, interest };
+        }
+
+        function getMonthlyData() {
+            const labels = amortizationData.slice(0, 60).map((row, i) => `${row.monthName.slice(0,3)} ${row.year}`);
+            const principal = amortizationData.slice(0, 60).map(row => row.principal);
+            const interest = amortizationData.slice(0, 60).map(row => row.interest);
+
+            return { labels, principal, interest };
+        }
+
+        function updateTable() {
+            const tableContainer = document.getElementById('amortizationTable');
+            
+            let tableData;
+            if (currentView === 'yearly') {
+                tableData = getYearlyTableData();
+            } else {
+                tableData = amortizationData;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>${currentView === 'yearly' ? 'YEAR' : 'MONTH'}</th>
+                            <th>PRINCIPAL</th>
+                            <th>INTEREST</th>
+                            <th>TOTAL PAYMENT</th>
+                            <th>BALANCE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            tableData.forEach(row => {
+                html += `
+                    <tr>
+                        <td>${currentView === 'yearly' ? row.year : `${row.monthName} ${row.year}`}</td>
+                        <td>$${row.principal.toFixed(2)}</td>
+                        <td>$${row.interest.toFixed(2)}</td>
+                        <td>$${row.totalPayment.toFixed(2)}</td>
+                        <td>$${row.balance.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            tableContainer.innerHTML = html;
+        }
+
+        function getYearlyTableData() {
+            const yearlyData = {};
+            
+            amortizationData.forEach(row => {
+                if (!yearlyData[row.year]) {
+                    yearlyData[row.year] = { 
+                        year: row.year,
+                        principal: 0, 
+                        interest: 0,
+                        totalPayment: 0,
+                        balance: row.balance
+                    };
+                }
+                yearlyData[row.year].principal += row.principal;
+                yearlyData[row.year].interest += row.interest;
+                yearlyData[row.year].totalPayment += row.totalPayment;
+                yearlyData[row.year].balance = row.balance;
+            });
+
+            return Object.values(yearlyData);
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            
+            // Update button states
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update chart and table
+            updateBarChart();
+            updateTable();
+        }
+
+        function saveScenario() {
+            alert('Scenario saved! (This is a demo - in a full version, this would save to your browser storage or a database)');
+        }
+
+        // Initial update of helpers
+        updateHelpers();
+    </script>
+</body>
+</html>
